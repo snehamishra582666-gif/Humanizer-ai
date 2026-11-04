@@ -1,0 +1,10 @@
+﻿venv/
+__pycache__/
+*.pyc
+.env
+backend/history.db
+training/out/
+training/pairs.jsonl
+training/val.json
+training/adapter/
+*.zip

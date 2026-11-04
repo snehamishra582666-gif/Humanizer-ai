@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pypdf
+python-docx
+reportlab
+sentence-transformers
+transformers
+torch
+accelerate
+peft
+datasets<4
+peft

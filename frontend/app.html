@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Humanizer – make AI text read like you wrote it</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fafaf9;--card:rgba(255,255,255,.9);--ink:#1c1c1e;--mute:#6b6b70;--line:#e7e5e4;--acc:#3b5bdb;--acc2:#3b5bdb;--onacc:#fff;--good:#2f7d4f;--warn:#b45309;--shadow:0 1px 2px rgba(0,0,0,.04)}
+[data-theme=dark]{--bg:#0a0e1a;--card:rgba(14,20,46,.82);--ink:#f1f5ff;--mute:#9aa8d0;--line:#26305a;--acc:#22d3ee;--acc2:#f472b6;--onacc:#04121a;--good:#a3e635;--warn:#fbbf24;--shadow:0 0 0 1px #26305a,0 10px 40px -20px #22d3ee66}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Sora,system-ui,sans-serif;transition:background .4s,color .4s}
+header{display:flex;align-items:center;justify-content:space-between;padding:18px 28px}
+.logo{font-weight:700;font-size:20px;letter-spacing:-.02em}.logo i{font-style:normal;color:var(--acc)}
+.bar{display:flex;gap:10px}
+button{font:inherit;cursor:pointer;transition:transform .15s,background .25s,box-shadow .25s,border-color .25s}
+button:focus-visible,textarea:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--acc2);outline-offset:2px}
+.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:8px 14px}
+.ghost:hover{border-color:var(--acc)}
+main{max-width:980px;margin:0 auto;padding:10px 20px 80px}
+h1{font-size:clamp(28px,5vw,44px);line-height:1.15;letter-spacing:-.03em;margin:28px 0 8px}
+h1 span{background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+[data-theme=light] h1 span{background:none;color:var(--acc)}
+.sub{color:var(--mute);margin:0 0 26px;max-width:60ch}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:var(--shadow);transition:background .4s,border-color .4s}
+.tabs{display:flex;gap:6px;margin-bottom:14px;position:relative}
+.tab{background:none;border:0;color:var(--mute);padding:8px 14px;border-radius:9px;font-weight:600}
+.tab.on{background:var(--acc);color:var(--onacc)}
+.pane{display:none;animation:in .3s}.pane.on{display:block}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+textarea{width:100%;min-height:200px;resize:vertical;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:14px;font:inherit;line-height:1.7}
+textarea:focus{border-color:var(--acc)}
+.count{color:var(--mute);font-size:13px;text-align:right;margin-top:4px}
+.drop{border:2px dashed var(--line);border-radius:14px;padding:44px 20px;text-align:center;color:var(--mute);transition:.25s;cursor:pointer}
+.drop.over,.drop:hover{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 8%,transparent);transform:scale(1.01)}
+.drop b{color:var(--ink);display:block;font-size:18px;margin-bottom:4px}
+.file{margin-top:12px;display:none;color:var(--good);font-weight:600}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin:20px 0}
+label{font-size:13px;color:var(--mute);display:block;margin-bottom:4px}
+select,input[type=number]{width:100%;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit}
+.go{width:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));color:var(--onacc);border:0;border-radius:12px;padding:15px;font-weight:700;font-size:17px}
+[data-theme=light] .go{background:var(--acc);color:#fff}
+.go:hover{transform:translateY(-2px);box-shadow:0 10px 30px -10px var(--acc)}.go:active{transform:scale(.98)}
+.go:disabled{opacity:.6;cursor:wait;transform:none}
+.steps{display:none;margin-top:16px;gap:8px;flex-wrap:wrap}.steps.on{display:flex}
+.step{padding:6px 12px;border-radius:99px;border:1px solid var(--line);color:var(--mute);font-size:13px;transition:.3s}
+.step.act{border-color:var(--acc);color:var(--acc);animation:pulse 1s infinite}.step.done{background:var(--good);color:#04121a;border-color:transparent}
+@keyframes pulse{50%{box-shadow:0 0 0 5px color-mix(in srgb,var(--acc) 25%,transparent)}}
+#res{margin-top:28px;display:none;animation:in .5s}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:760px){.cols{grid-template-columns:1fr}}
+.col h3{margin:0 0 8px;font-size:15px;color:var(--mute)}
+.txt{white-space:pre-wrap;line-height:1.75;max-height:420px;overflow:auto}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.chip{border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:13px;color:var(--mute)}
+.chip b{display:block;color:var(--ink);font-size:17px}.chip.ok b{color:var(--good)}.chip.bad b{color:var(--warn)}
+.acts{display:flex;gap:10px;flex-wrap:wrap}
+.pri{background:var(--acc);color:var(--onacc);border:0;border-radius:10px;padding:10px 18px;font-weight:600}.pri:hover{transform:translateY(-2px)}
+.note{color:var(--mute);font-size:13px;margin-top:14px}
+.pos{border-bottom:2px solid var(--good)}.neg{border-bottom:2px solid var(--acc2)}
+#drawer{position:fixed;top:0;right:0;height:100%;width:min(420px,100%);background:var(--card);border-left:1px solid var(--line);transform:translateX(100%);transition:transform .35s cubic-bezier(.2,.8,.2,1);padding:20px;overflow:auto;z-index:5}
+#drawer.on{transform:none}
+.h{border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0;cursor:pointer;transition:.2s}.h:hover{border-color:var(--acc);transform:translateX(-3px)}
+.h small{color:var(--mute)}
+#toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,80px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:10px;transition:.35s;z-index:9}#toast.on{transform:translate(-50%,0)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+#bg{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+.shade{position:fixed;inset:0;z-index:1;pointer-events:none;background:linear-gradient(rgba(6,4,24,.6),rgba(6,4,24,.2) 55%,transparent)}
+[data-theme=light] .shade{background:linear-gradient(rgba(250,250,249,.85),rgba(250,250,249,.4) 60%,transparent)}
+[data-theme=light] #bg{opacity:.45}
+[data-theme=dark] body{background:linear-gradient(#0b0626,#2a0f4d 45%,#7a2a6b 78%,#ff7a59 100%) fixed}
+header,main{position:relative;z-index:2}
+.card{backdrop-filter:blur(14px)}
+a.ghost{text-decoration:none;display:inline-block}
+.hero{padding:10px 0 6px}
+.how{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 22px}
+.how span{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:99px;background:var(--card);border:1px solid var(--line);font-size:14px;backdrop-filter:blur(10px);animation:in .6s both}
+.how span:nth-child(2){animation-delay:.12s}.how span:nth-child(3){animation-delay:.24s}
+.how b{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--acc);color:var(--onacc);font-size:12px}
+[data-theme=dark] #go-card,[data-theme=dark] main>.card:first-of-type{box-shadow:0 0 0 1px #26305a,0 20px 80px -30px #f472b6aa}
+.still *{animation:none!important}
+</style>
+</head>
+<body>
+<canvas id="bg" aria-hidden="true"></canvas><div class="shade"></div>
+<header>
+  <div class="logo">Human<i>izer</i></div>
+  <div class="bar">
+    <a class="ghost" href="index.html">Home</a>
+    <button class="ghost" id="pause" aria-pressed="false">Pause animation</button>
+    <button class="ghost" id="hbtn">History</button>
+    <button class="ghost" id="theme" aria-label="Switch between light and dark theme">Dark mode</button>
+  </div>
+</header>
+<main>
+  <h1>Turn AI-sounding text into <span>writing that reads naturally</span></h1>
+  <p class="sub">Paste text, upload a file, or describe what you need. Your facts and meaning are kept, and every result comes with checks you can read.</p>
+
+  <div class="how" aria-label="How it works"><span><b>1</b>Add text, a file or a prompt</span><span><b>2</b>Pick the style</span><span><b>3</b>Copy it or save a PDF</span></div>
+
+  <section class="card">
+    <div class="tabs" role="tablist">
+      <button class="tab on" data-p="p1">Paste text</button>
+      <button class="tab" data-p="p2">Upload file</button>
+      <button class="tab" data-p="p3">Write from a prompt</button>
+    </div>
+    <div class="pane on" id="p1"><textarea id="text" placeholder="Paste your text here…"></textarea><div class="count" id="cnt">0 words</div></div>
+    <div class="pane" id="p2">
+      <div class="drop" id="drop"><b>Drop a file here, or click to choose</b>TXT, MD, PDF or Word (.docx)</div>
+      <input type="file" id="file" accept=".txt,.md,.pdf,.docx" hidden><div class="file" id="fname"></div>
+    </div>
+    <div class="pane" id="p3"><textarea id="prompt" placeholder="Example: Write a friendly 300-word LinkedIn post about finishing my first marathon."></textarea></div>
+
+    <div class="opts">
+      <div><label for="strength">How much to rewrite</label><select id="strength"><option value="light">Light</option><option value="medium" selected>Medium</option><option value="heavy">Heavy</option></select></div>
+      <div><label for="tone">Tone</label><select id="tone"><option>neutral</option><option>casual</option><option>academic</option><option>professional</option><option>storytelling</option></select></div>
+      <div><label for="target">Target length in words (optional)</label><input type="number" id="target" min="0" placeholder="Same as original"></div>
+    </div>
+    <button class="go" id="go">Humanize</button>
+    <div class="steps" id="steps"><span class="step">Reading</span><span class="step">Rewriting</span><span class="step">Checking meaning</span><span class="step">Checking length &amp; facts</span></div>
+  </section>
+
+  <section id="res" class="card">
+    <div class="chips" id="chips"></div>
+    <div class="cols">
+      <div class="col"><h3>Original</h3><div class="txt" id="orig"></div></div>
+      <div class="col"><h3>Humanized</h3><div class="txt" id="out"></div></div>
+    </div>
+    <div class="acts" style="margin-top:18px">
+      <button class="pri" id="copy">Copy text</button>
+      <button class="ghost" id="pdf">Download PDF</button>
+    </div>
+    <p class="note" id="note"></p>
+  </section>
+</main>
+<aside id="drawer" aria-label="History"><div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">History</h2><button class="ghost" id="close">Close</button></div><div id="list"></div></aside>
+<div id="toast"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+let file=null,cur=null;
+const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2000)};
+// theme
+const setTheme=t=>{document.documentElement.dataset.theme=t;localStorage.theme=t;$('#theme').textContent=t=='dark'?'Light mode':'Dark mode'};
+setTheme(localStorage.theme||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'));
+$('#theme').onclick=()=>setTheme(document.documentElement.dataset.theme=='dark'?'light':'dark');
+// tabs
+$$('.tab').forEach(b=>b.onclick=()=>{$$('.tab').forEach(x=>x.classList.toggle('on',x==b));$$('.pane').forEach(p=>p.classList.toggle('on',p.id==b.dataset.p))});
+$('#text').oninput=e=>$('#cnt').textContent=(e.target.value.trim().split(/\s+/).filter(Boolean).length)+' words';
+// file
+const pick=f=>{file=f;$('#fname').style.display='block';$('#fname').textContent='Ready: '+f.name};
+$('#drop').onclick=()=>$('#file').click();$('#file').onchange=e=>e.target.files[0]&&pick(e.target.files[0]);
+['dragover','dragenter'].forEach(ev=>$('#drop').addEventListener(ev,e=>{e.preventDefault();$('#drop').classList.add('over')}));
+['dragleave','drop'].forEach(ev=>$('#drop').addEventListener(ev,e=>{e.preventDefault();$('#drop').classList.remove('over')}));
+$('#drop').addEventListener('drop',e=>e.dataTransfer.files[0]&&pick(e.dataTransfer.files[0]));
+// run
+let timer;
+const animate=()=>{const s=$$('.step');s.forEach(x=>x.className='step');$('#steps').classList.add('on');let i=0;s[0].classList.add('act');
+ timer=setInterval(()=>{if(i<s.length-1){s[i].className='step done';s[++i].classList.add('act')}},1800)};
+$('#go').onclick=async()=>{
+ const active=$('.tab.on').dataset.p,body={strength:$('#strength').value,tone:$('#tone').value,target_words:+$('#target').value||0};
+ let r;$('#go').disabled=true;$('#go').textContent='Working…';animate();
+ try{
+  if(active=='p2'){if(!file)throw Error('Choose a file first.');const f=new FormData();f.append('file',file);Object.entries(body).forEach(([k,v])=>f.append(k,v));r=await fetch('/api/humanize-file',{method:'POST',body:f})}
+  else r=await fetch('/api/humanize',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...body,text:active=='p1'?$('#text').value:'',prompt:active=='p3'?$('#prompt').value:''})});
+  if(!r.ok)throw Error((await r.json()).detail||'Something went wrong.');
+  show(await r.json())
+ }catch(e){toast(e.message)}
+ clearInterval(timer);$$('.step').forEach(x=>x.className='step done');$('#go').disabled=false;$('#go').textContent='Humanize'};
+const chip=(l,v,ok)=>`<div class="chip ${ok===undefined?'':ok?'ok':'bad'}">${l}<b>${v}</b></div>`;
+function show(d){cur=d;const m=d.metrics;
+ $('#orig').innerHTML=(d.sentences||[{text:d.source}]).map(s=>`<span class="${s.sentiment=='positive'?'pos':s.sentiment=='negative'?'neg':''}">${s.text}</span>`).join(' ');
+ $('#out').textContent=d.output;
+ $('#chips').innerHTML=chip('Words',`${m.in_words} → ${m.out_words}`,m.length_ok)+chip('Meaning kept',Math.round(m.meaning*100)+'%',m.meaning>=.85)
+  +chip('Facts kept',Math.round(m.facts_kept*100)+'%',m.facts_kept==1)+chip('Tone kept',Math.round(m.sentiment_kept*100)+'%',m.sentiment_kept>=.8)
+  +chip('AI-style estimate',m.ai_before+'% → '+m.ai_after+'%',m.ai_after<50)+chip('Readability',m.readability)+chip('Attempts',m.attempts);
+ $('#note').textContent=(m.llm?'':'The local model could not load, so only the rule-based clean-up ran. Check the server log. ')
+  +(m.dropped_facts.length?'Possibly changed: '+m.dropped_facts.join(', ')+'. Please review. ':'')
+  +'Original sentences are underlined by sentiment (green positive, pink negative). The AI-style number is a rough local estimate. Real detectors differ and are unreliable, so it is not a guarantee.';
+ $('#res').style.display='block';$('#res').scrollIntoView({behavior:'smooth'})}
+$('#copy').onclick=async()=>{await navigator.clipboard.writeText(cur.output);toast('Copied to clipboard')};
+$('#pdf').onclick=async()=>{const r=await fetch('/api/pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:cur.output})});
+ const a=document.createElement('a');a.href=URL.createObjectURL(await r.blob());a.download='humanized.pdf';a.click();toast('PDF downloaded')};
+// history
+async function hist(){const l=await (await fetch('/api/history')).json();
+ $('#list').innerHTML=l.length?l.map(h=>`<div class="h" data-i="${h.id}"><small>${new Date(h.created*1000).toLocaleString()} · ${h.in_words} → ${h.out_words} words</small><div>${h.output.slice(0,110)}…</div><button class="ghost" data-d="${h.id}" style="margin-top:8px">Delete</button></div>`).join(''):'<p class="note">Nothing here yet. Your humanized texts will appear here.</p>';
+ $$('.h').forEach(e=>e.onclick=ev=>{if(ev.target.dataset.d)return;show(l.find(x=>x.id==e.dataset.i));$('#drawer').classList.remove('on')});
+ $$('[data-d]').forEach(b=>b.onclick=async()=>{await fetch('/api/history/'+b.dataset.d,{method:'DELETE'});hist()})}
+$('#hbtn').onclick=()=>{$('#drawer').classList.add('on');hist()};$('#close').onclick=()=>$('#drawer').classList.remove('on');
+</script>
+<script>
+/* Dusk dojo: the human slashes the words the robot throws. 6 s seamless loop. */
+(function(){
+ if(!window.THREE)return;const cv=document.getElementById('bg');let R;
+ try{R=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true})}catch(e){return}
+ const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;let paused=reduce;
+ const pb=document.getElementById('pause'),sync=()=>{document.body.classList.toggle('still',paused);pb.setAttribute('aria-pressed',paused);pb.textContent=paused?'Play animation':'Pause animation'};
+ pb.onclick=()=>{paused=!paused;sync()};sync();
+ const S=new THREE.Scene(),C=new THREE.PerspectiveCamera(45,1,.1,100);
+ S.add(new THREE.AmbientLight(0xffc9e0,.8));const dl=new THREE.DirectionalLight(0xffb27a,1.2);dl.position.set(-3,6,8);S.add(dl);
+ const rim=new THREE.PointLight(0xff4fa0,2,16);rim.position.set(4,4,3);S.add(rim);
+ const M=(c,e,m)=>new THREE.MeshStandardMaterial({color:c,roughness:.5,metalness:m||.1,emissive:e||0,emissiveIntensity:.4});
+ const mesh=(g,m,x,y,z)=>{const o=new THREE.Mesh(g,m);o.position.set(x||0,y||0,z||0);return o};
+ const cyl=(r,h)=>new THREE.CylinderGeometry(r,r,h,14),sph=r=>new THREE.SphereGeometry(r,14,14);
+ S.add(mesh(new THREE.CircleGeometry(4.2,48),new THREE.MeshBasicMaterial({color:0xffb36b,transparent:true,opacity:.9,fog:false}),0,5.5,-14));
+ S.add(mesh(new THREE.BoxGeometry(16,.5,5),M(0x2b1a3d,0x2a0f4d,.3),0,-.25,0),mesh(new THREE.BoxGeometry(16.1,.06,5.1),new THREE.MeshBasicMaterial({color:0xff7ab6}),0,.02,0));
+ function limb(len,r,m,hand,pz,py){const g=new THREE.Group();g.position.set(0,py,pz);g.add(mesh(cyl(r,len),m,0,-len/2,0),mesh(sph(r*1.35),hand,0,-len-.05,0));return g}
+ function fighter(h){
+  const sk=h?M(0xffc9a0):M(0xb7a6e8,0x1a1040,.7),bd=h?M(0x273b8f,0x0a1040):M(0x4a2f8f,0x1a0a50,.6),lg=h?M(0x1b2250):M(0x2a1f5a,0,.6),vis=M(0xff4fa0,0xff4fa0);
+  const g=new THREE.Group(),torso=new THREE.Group(),head=new THREE.Group();torso.position.y=1.45;head.position.y=1.75;g.add(torso);torso.add(head);
+  torso.add(mesh(h?cyl(.5,1.3):new THREE.BoxGeometry(1.1,1.3,.9),bd,0,.6,0));
+  if(h){torso.add(mesh(cyl(.52,.18),M(0xff7a59,0x401000),0,.2,0));
+   head.add(mesh(sph(.4),sk),mesh(new THREE.SphereGeometry(.43,24,12,0,6.3,0,1.45),M(0x1a0f10),0,.03,0),mesh(cyl(.44,.1),M(0xff4fa0,0xff4fa0),0,.12,0),mesh(sph(.06),M(0x111111),.36,.05,.16),mesh(sph(.06),M(0x111111),.36,.05,-.16))}
+  else head.add(mesh(new THREE.BoxGeometry(.8,.7,.8),sk),mesh(new THREE.BoxGeometry(.2,.28,.62),vis,.38,.05,0),mesh(cyl(.03,.5),sk,0,.6,0),mesh(sph(.09),vis,0,.9,0));
+  const aN=limb(1.1,h?.13:.2,bd,h?sk:vis,.62,1.0),aF=limb(1.1,h?.13:.15,bd,sk,-.62,1.0);torso.add(aN,aF);
+  const lN=limb(1.4,.16,lg,lg,.22,0),lF=limb(1.4,.16,lg,lg,-.22,0);lN.position.y=1.45;lF.position.y=1.45;g.add(lN,lF);
+  let blade;if(h){blade=M(0x9ff6ff,0x22d3ee);aN.add(mesh(cyl(.05,.4),M(0x222233),0,-1.3,0),mesh(new THREE.BoxGeometry(.5,.07,.12),M(0xffd23f,0xffd23f),0,-1.5,0),mesh(new THREE.BoxGeometry(.1,1.5,.04),blade,0,-2.3,0))}
+  return{g,torso,head,aN,aF,lN,lF,vis,blade}}
+ const H=fighter(true),B=fighter(false);B.g.rotation.y=Math.PI;S.add(H.g,B.g);
+ const WORDS=['delve','moreover','tapestry','leverage','synergy','furthermore','robust','utilize','in conclusion'];
+ const tex=WORDS.map(w=>{const k=document.createElement('canvas');k.width=512;k.height=200;const x=k.getContext('2d');x.fillStyle='#ff4fa0';x.beginPath();x.roundRect?x.roundRect(8,20,496,160,60):x.rect(8,20,496,160);x.fill();x.strokeStyle='#fff';x.lineWidth=6;x.stroke();
+  x.font='800 78px Sora,Arial';x.textAlign='center';x.textBaseline='middle';x.fillStyle='#fff';x.fillText(w,256,104);return new THREE.CanvasTexture(k)});
+ const sprites=[0,1,2].map(i=>{const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tex[i],transparent:true,depthTest:false}));s.scale.set(0,0,1);S.add(s);return s});
+ const shards=[0,1,2].map(()=>[...Array(8)].map((_,k)=>{const m=mesh(new THREE.BoxGeometry(.18,.12,.04),new THREE.MeshBasicMaterial({color:k%2?0xff4fa0:0x7dfcff}));m.visible=false;m.userData.a=k/8*6.28;S.add(m);return m}));
+ const arc=mesh(new THREE.RingGeometry(1.5,1.85,40,1,-.4,2.4),new THREE.MeshBasicMaterial({color:0x7dfcff,transparent:true,opacity:0,side:2}),-2,3.4,.8);S.add(arc);
+ const ep=new Float32Array(360),eg=new THREE.BufferGeometry();for(let i=0;i<360;i+=3){ep[i]=(Math.random()-.5)*26;ep[i+1]=Math.random()*9;ep[i+2]=(Math.random()-.5)*8}
+ eg.setAttribute('position',new THREE.BufferAttribute(ep,3));const emb=new THREE.Points(eg,new THREE.PointsMaterial({color:0xffb36b,size:.09,transparent:true,opacity:.85}));S.add(emb);
+ const bump=(p,a,b)=>p>a&&p<b?Math.sin((p-a)/(b-a)*Math.PI):0,OFF=[.02,.36,.70];
+ function pose(p,loop){
+  let thr=0,wind=0,sl=0;
+  OFF.forEach((o,i)=>{const u=(p-o+1)%1,q=u/.3,s=sprites[i],sh=shards[i];
+   thr+=bump(u,0,.05);wind+=bump(u,.10,.18);sl+=bump(u,.17,.27);
+   if(q<=.72){const f=q/.72;s.material.map=tex[(loop*3+i)%WORDS.length];s.position.set(2.7-4*f,3.9-.5*f+Math.sin(f*Math.PI)*1.3,.5);s.scale.set(2.2,.86,1);s.material.rotation=Math.sin(f*Math.PI*2)*.35;sh.forEach(m=>m.visible=false)}
+   else if(q<=1){const f=(q-.72)/.28;s.scale.set(0,0,1);sh.forEach(m=>{m.visible=true;const a=m.userData.a;m.position.set(-1.3+Math.cos(a)*f*2.2,3.4+Math.sin(a)*f*1.8-f*f*1.2,.5);m.rotation.z=a+f*5;m.scale.setScalar(1-f)})}
+   else{s.scale.set(0,0,1);sh.forEach(m=>m.visible=false)}});
+  const w=Math.sin(p*Math.PI*8);
+  H.g.position.set(-3.8+sl*.5,Math.abs(w)*.05,0);H.aN.rotation.z=.5-1.7*wind+2.0*sl;H.aF.rotation.z=.7+Math.sin(p*Math.PI*6)*.05;H.torso.rotation.z=wind*.15-sl*.2;H.lN.rotation.z=w*.2;H.lF.rotation.z=-w*.2;H.blade.emissiveIntensity=.4+sl*3;
+  B.g.position.set(3.8+thr*.3,Math.abs(w)*.05,0);B.aN.rotation.z=.6+1.7*thr;B.aF.rotation.z=.7;B.torso.rotation.z=-thr*.2;B.lN.rotation.z=-w*.2;B.lF.rotation.z=w*.2;B.vis.emissiveIntensity=.4+thr*2.5;
+  arc.material.opacity=sl*.95;arc.scale.setScalar(.8+sl*.4)}
+ let mx=0,my=0,t=0,last=performance.now();addEventListener('pointermove',e=>{mx=e.clientX/innerWidth-.5;my=e.clientY/innerHeight-.5});
+ function size(){R.setPixelRatio(Math.min(devicePixelRatio,2));R.setSize(innerWidth,innerHeight,false);C.aspect=innerWidth/innerHeight;C.updateProjectionMatrix()}addEventListener('resize',size);size();
+ let cx=0,cy=2.2;
+ function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;if(!paused)t+=dt;
+  const p=reduce&&paused?.205:(t%6)/6;pose(p,Math.floor(t/6));
+  const nar=C.aspect<1?(1/C.aspect)*3.4:0,k=Math.min(1,dt*3);cx+=(mx*1.4-cx)*k;cy+=(2.2-my*.6-cy)*k;
+  C.position.set(cx,cy,12+nar);C.lookAt(0,5.2,0);
+  if(!paused){const a=emb.geometry.attributes.position;for(let i=1;i<360;i+=3)a.array[i]=(a.array[i]+dt*.35)%9;a.needsUpdate=true}
+  R.render(S,C);requestAnimationFrame(frame)}
+ requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

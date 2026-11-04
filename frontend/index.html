@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Humanizer Arena – write like a human</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070a18;--panel:rgba(10,14,38,.78);--ink:#f5f7ff;--mute:#bcc6f0;--line:rgba(160,180,255,.25);--human:#ff7a59;--robot:#22d3ee;--vio:#a78bfa;--link:#7dd3fc;--btn:#1a0b14;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root[data-theme=light]{--panel:rgba(255,255,255,.88);--ink:#14182e;--mute:#444c70;--line:rgba(20,24,46,.18);--link:#2a35b8}
+@media(prefers-color-scheme:light){:root:not([data-theme=dark]):not([data-theme=light]){--panel:rgba(255,255,255,.88)}}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;color:var(--ink);font:16px/1.6 Sora,system-ui,sans-serif;background:radial-gradient(1200px 700px at 70% 100%,#2a1b5e 0,transparent 60%),radial-gradient(900px 600px at 10% 0,#0b3a52 0,transparent 55%),var(--bg);overflow-x:hidden}
+#scene{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+.shade{position:fixed;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(7,10,24,.78),rgba(7,10,24,.25) 55%,rgba(7,10,24,.1))}
+[data-theme=light] .shade{background:linear-gradient(90deg,rgba(240,244,255,.78),rgba(240,244,255,.2) 60%,transparent)}
+.skip{position:absolute;left:-999px}.skip:focus{left:12px;top:12px;z-index:9;background:#fff;color:#000;padding:8px 12px;border-radius:8px}
+header,main,footer{position:relative;z-index:2}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:14px clamp(16px,4vw,40px)}
+.logo{font-weight:800;font-size:20px;color:var(--ink);text-decoration:none;letter-spacing:-.02em}.logo i{font-style:normal;color:var(--human)}
+nav{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+a,button{font:inherit}a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--robot);outline-offset:2px}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 20px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);text-decoration:none;font-weight:600;cursor:pointer;transition:transform .2s,box-shadow .3s,border-color .3s;backdrop-filter:blur(8px)}
+.btn:hover{transform:translateY(-3px) rotateX(8deg);border-color:var(--robot);box-shadow:0 12px 30px -10px var(--robot)}.btn:active{transform:scale(.96)}
+.btn.pri{background:linear-gradient(135deg,#ff9a6a,#ff5c93);color:var(--btn);border:0;font-weight:800;box-shadow:0 10px 30px -10px #ff5c93}
+.btn.pri:hover{box-shadow:0 16px 40px -10px #ff5c93}.btn.ghost{border-color:var(--robot);color:var(--link)}
+main{max-width:1100px;margin:0 auto;padding:10px clamp(16px,4vw,40px) 60px}
+.view{display:none}.view.on{display:block;animation:rise .6s cubic-bezier(.2,.8,.2,1)}
+@keyframes rise{from{opacity:0;transform:translateY(24px) scale(.98)}to{opacity:1;transform:none}}
+.hero{padding:6vh 0 30px;max-width:620px}
+.tag{display:inline-block;padding:4px 12px;border:1px solid var(--line);border-radius:99px;background:var(--panel);color:var(--mute);font-size:13px}
+h1{font-size:clamp(34px,6vw,64px);line-height:1.05;letter-spacing:-.04em;margin:16px 0}
+h1 em{font-style:normal;background:linear-gradient(90deg,var(--human),var(--vio),var(--robot));-webkit-background-clip:text;background-clip:text;color:transparent;background-size:200% 100%;animation:flow 6s linear infinite}
+[data-theme=light] h1 em{background:none;color:#c2410c}
+@keyframes flow{to{background-position:200% 0}}
+.lead{color:var(--mute);font-size:18px;text-shadow:0 1px 12px rgba(0,0,0,.35)}[data-theme=light] .lead{text-shadow:none}
+.cta{display:flex;gap:12px;flex-wrap:wrap;margin:24px 0}
+.score{display:inline-flex;gap:14px;padding:8px 16px;border-radius:12px;background:var(--panel);border:1px solid var(--line);font-weight:600}
+.score b{font-size:20px}.score .h{color:var(--human)}.score .r{color:var(--robot)}
+[data-theme=light] .score .h{color:#b3360f}[data-theme=light] .score .r{color:#0e6e82}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-top:40px;perspective:900px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;backdrop-filter:blur(10px);transform-style:preserve-3d;transition:transform .25s,border-color .3s}
+.card:hover{border-color:var(--vio)}.card h3{margin:12px 0 4px}.card p{margin:0;color:var(--mute);font-size:15px}
+.ic{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,var(--human),var(--vio));transform:translateZ(30px)}
+.ic svg{width:26px;height:26px;stroke:#1a0b14;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.auth{display:grid;grid-template-columns:minmax(300px,440px) 1fr;gap:28px;align-items:center;padding-top:3vh}
+.auth.flip{grid-template-columns:1fr minmax(300px,440px)}.auth.flip .panel{order:2}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:clamp(20px,4vw,34px);backdrop-filter:blur(14px);box-shadow:0 30px 80px -30px rgba(0,0,0,.6)}
+.panel h2{margin:0 0 4px;font-size:28px;letter-spacing:-.03em}.panel>p{margin:0 0 18px;color:var(--mute)}
+label{display:block;font-size:14px;font-weight:600;margin:14px 0 6px}
+.f{position:relative}
+input[type=text],input[type=email],input[type=password]{width:100%;min-height:46px;border-radius:12px;border:1px solid var(--line);background:rgba(127,140,200,.12);color:var(--ink);padding:0 14px;font:inherit;transition:border-color .2s,box-shadow .2s}
+input:focus{border-color:var(--robot);box-shadow:0 0 0 4px rgba(34,211,238,.18)}
+.eye{position:absolute;right:6px;top:3px;min-height:40px;border:0;background:none;color:var(--link);font-weight:600;cursor:pointer}
+.meter{height:6px;border-radius:9px;background:var(--line);margin-top:8px;overflow:hidden}.meter i{display:block;height:100%;width:0;background:var(--human);transition:width .4s,background .4s}
+.row{display:flex;align-items:center;gap:8px;margin:14px 0;color:var(--mute);font-size:14px}.row label{margin:0;font-weight:400}
+.err{min-height:22px;color:#ff9aa8;font-size:14px;margin:8px 0}[data-theme=light] .err{color:#b4233b}
+.ok{color:#6ee7b7;font-weight:600}[data-theme=light] .ok{color:#0b6b4a}
+.panel .btn{width:100%}.swap{margin-top:16px;text-align:center;color:var(--mute);font-size:15px}.swap a{color:var(--link);font-weight:600}
+.art{display:grid;place-items:center;perspective:1000px}
+.art figure{margin:0;width:min(420px,90%);padding:18px;border-radius:26px;background:linear-gradient(145deg,rgba(34,211,238,.18),rgba(255,122,89,.18));border:1px solid var(--line);backdrop-filter:blur(8px);transform:rotateY(-12deg) rotateX(5deg);animation:float 6s ease-in-out infinite;text-align:center}
+.flip .art figure{transform:rotateY(12deg) rotateX(5deg)}
+@keyframes float{50%{translate:0 -14px}}
+.art svg{width:100%;height:auto;display:block}.art figcaption{color:var(--mute);font-size:14px;margin-top:8px}
+footer{padding:20px;text-align:center;color:var(--mute);font-size:13px}
+.still *,.still *::before{animation:none!important}
+@media(max-width:820px){.auth,.auth.flip{grid-template-columns:1fr}.auth.flip .panel{order:0}.art{display:none}.shade{background:rgba(7,10,24,.6)}[data-theme=light] .shade{background:rgba(240,244,255,.6)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<canvas id="scene" aria-hidden="true"></canvas><div class="shade"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="robo" viewBox="0 0 200 200"><rect x="30" y="40" width="140" height="120" rx="30" fill="#1b2a5a" stroke="#22d3ee" stroke-width="4"/><rect x="50" y="70" width="100" height="40" rx="20" fill="#06121f"/><circle cx="80" cy="90" r="11" fill="#22d3ee"/><circle cx="120" cy="90" r="11" fill="#22d3ee"/><rect x="70" y="128" width="60" height="10" rx="5" fill="#22d3ee" opacity=".8"/><path d="M100 40V18" stroke="#22d3ee" stroke-width="5"/><circle cx="100" cy="14" r="8" fill="#ff7a59"/><rect x="14" y="85" width="16" height="36" rx="8" fill="#22d3ee"/><rect x="170" y="85" width="16" height="36" rx="8" fill="#22d3ee"/></symbol>
+<symbol id="hum" viewBox="0 0 200 200"><circle cx="100" cy="105" r="62" fill="#ffc9a0"/><path d="M38 95c0-48 32-68 66-64 36 4 60 28 58 64-14-22-36-30-62-30s-46 8-62 30z" fill="#2a1a14"/><circle cx="78" cy="108" r="7" fill="#2a1a14"/><circle cx="122" cy="108" r="7" fill="#2a1a14"/><path d="M76 134q24 24 48 0" stroke="#b3482c" stroke-width="6" fill="none" stroke-linecap="round"/><circle cx="62" cy="128" r="9" fill="#ff7a59" opacity=".45"/><circle cx="138" cy="128" r="9" fill="#ff7a59" opacity=".45"/></symbol>
+</defs></svg>
+
+<header>
+  <a class="logo" href="#home">Humanizer <i>Arena</i></a>
+  <nav aria-label="Main">
+    <button class="btn" id="pause" aria-pressed="false">Pause animation</button>
+    <button class="btn" id="theme" aria-label="Switch light or dark theme">Light mode</button>
+    <a class="btn ghost" href="#login">Log in</a>
+    <a class="btn pri" href="#register">Sign up</a>
+  </nav>
+</header>
+
+<main id="main">
+  <section class="view on" id="home">
+    <div class="hero">
+      <span class="tag">Human vs. Robot · round after round</span>
+      <h1>Make machine text <em>sound human</em> again.</h1>
+      <p class="lead">Drop in a file or a paragraph and watch the human win. Your facts stay put, your meaning is checked, and the result reads like a person wrote it.</p>
+      <div class="cta">
+        <a class="btn pri" href="#register">Create free account</a>
+        <a class="btn ghost" href="#login">I already have one</a>
+      </div>
+      <div class="score" aria-hidden="true">Live score <span class="h">Human <b id="sh">0</b></span><span class="r">Robot <b id="sr">0</b></span></div>
+    </div>
+    <div class="grid" id="cards">
+      <article class="card"><div class="ic"><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg></div><h3>Facts stay locked</h3><p>Names, dates and numbers are checked after every rewrite.</p></article>
+      <article class="card"><div class="ic"><svg viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></div><h3>Natural rhythm</h3><p>Varied sentences and plain words instead of stock AI phrases.</p></article>
+      <article class="card"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg></div><h3>Runs on your machine</h3><p>Upload TXT, PDF or Word. Nothing leaves your computer.</p></article>
+    </div>
+  </section>
+
+  <section class="view" id="login">
+    <div class="auth">
+      <div class="panel">
+        <h2>Welcome back</h2><p>Log in to see your history and keep humanizing.</p>
+        <form id="fl" novalidate>
+          <label for="le">Email</label><input id="le" type="email" autocomplete="email" required>
+          <label for="lp">Password</label>
+          <div class="f"><input id="lp" type="password" autocomplete="current-password" required><button class="eye" type="button" data-t="lp" aria-pressed="false">Show</button></div>
+          <div class="row"><input type="checkbox" id="rm"><label for="rm">Remember me</label></div>
+          <div class="err" id="el" role="alert" aria-live="polite"></div>
+          <button class="btn pri" type="submit">Log in</button>
+        </form>
+        <p class="swap">New here? <a href="#register">Create an account</a></p>
+      </div>
+      <div class="art"><figure><svg role="img" aria-label="Friendly illustrated robot"><use href="#robo"/></svg><figcaption>The robot has been practicing. Brace yourself.</figcaption></figure></div>
+    </div>
+  </section>
+
+  <section class="view" id="register">
+    <div class="auth flip">
+      <div class="art"><figure><svg role="img" aria-label="Smiling illustrated human"><use href="#hum"/></svg><figcaption>Join the human side. Snacks are provided.</figcaption></figure></div>
+      <div class="panel">
+        <h2>Create your account</h2><p>Free, quick, and no card needed.</p>
+        <form id="fr" novalidate>
+          <label for="rn">Your name</label><input id="rn" type="text" autocomplete="name" required>
+          <label for="re">Email</label><input id="re" type="email" autocomplete="email" required>
+          <label for="rp">Password</label>
+          <div class="f"><input id="rp" type="password" autocomplete="new-password" required aria-describedby="ms"><button class="eye" type="button" data-t="rp" aria-pressed="false">Show</button></div>
+          <div class="meter" aria-hidden="true"><i id="bar"></i></div><small id="ms">Use 8+ characters with a mix of letters and numbers.</small>
+          <div class="row"><input type="checkbox" id="tt"><label for="tt">I agree to use this tool responsibly</label></div>
+          <div class="err" id="er" role="alert" aria-live="polite"></div>
+          <button class="btn pri" type="submit">Sign up</button>
+        </form>
+        <p class="swap">Already a member? <a href="#login">Log in</a></p>
+      </div>
+    </div>
+  </section>
+</main>
+<footer>Demo interface · accounts are stored only in this browser</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const store={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let paused=reduce;
+/* theme */
+const setTheme=t=>{document.documentElement.dataset.theme=t;store.set('theme',t);$('#theme').textContent=t=='dark'?'Light mode':'Dark mode'};
+setTheme(store.get('theme')||'dark');$('#theme').onclick=()=>setTheme(document.documentElement.dataset.theme=='dark'?'light':'dark');
+/* pause */
+const applyPause=()=>{document.body.classList.toggle('still',paused);$('#pause').setAttribute('aria-pressed',paused);$('#pause').textContent=paused?'Play animation':'Pause animation'};
+$('#pause').onclick=()=>{paused=!paused;applyPause()};applyPause();
+/* router */
+function route(){const v=['home','login','register'].includes(location.hash.slice(1))?location.hash.slice(1):'home';
+ $$('.view').forEach(e=>e.classList.toggle('on',e.id==v));window.view=v;scrollTo({top:0})}
+addEventListener('hashchange',route);route();
+/* tilt cards */
+$$('.card').forEach(c=>{c.addEventListener('pointermove',e=>{if(paused)return;const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;c.style.transform=`rotateY(${x*18}deg) rotateX(${-y*18}deg) translateZ(10px)`});c.addEventListener('pointerleave',()=>c.style.transform='')});
+/* forms */
+$$('.eye').forEach(b=>b.onclick=()=>{const i=$('#'+b.dataset.t),s=i.type=='password';i.type=s?'text':'password';b.textContent=s?'Hide':'Show';b.setAttribute('aria-pressed',s)});
+const mail=v=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v);
+const strength=p=>[p.length>=8,/[a-z]/.test(p)&&/[A-Z]/.test(p),/\d/.test(p),/[^\w\s]/.test(p)].filter(Boolean).length;
+$('#rp').addEventListener('input',e=>{const s=strength(e.target.value);$('#bar').style.width=s*25+'%';$('#bar').style.background=['#ff5c6c','#ff5c6c','#fbbf24','#a3e635','#34d399'][s]});
+function done(btn,msg,box){btn.textContent='✓ Success';box.className='err ok';box.innerHTML=msg+' Opening the humanizer… <a href="app.html" style="color:var(--link)">Go now →</a>';
+ if(/^(localhost|127\.)/.test(location.hostname))setTimeout(()=>{location.href='app.html'},1200)}
+$('#fl').onsubmit=e=>{e.preventDefault();const b=$('#el');
+ if(!mail($('#le').value))return b.textContent='Please enter a valid email address.';
+ if($('#lp').value.length<8)return b.textContent='Your password should be at least 8 characters.';
+ store.set('user',$('#le').value);done(e.target.querySelector('.pri'),'Welcome back!',b)};
+$('#fr').onsubmit=e=>{e.preventDefault();const b=$('#er');
+ if(!$('#rn').value.trim())return b.textContent='Please tell us your name.';
+ if(!mail($('#re').value))return b.textContent='Please enter a valid email address.';
+ if(strength($('#rp').value)<2||$('#rp').value.length<8)return b.textContent='Choose a stronger password: 8+ characters with letters and numbers.';
+ if(!$('#tt').checked)return b.textContent='Please tick the box to continue.';
+ store.set('user',$('#re').value);done(e.target.querySelector('.pri'),'Account created, '+$('#rn').value.trim()+'!',b)};
+
+/* 3D scene: human vs robot, 6 second seamless loop */
+(function(){
+ if(!window.THREE)return;let R;
+ try{R=new THREE.WebGLRenderer({canvas:$('#scene'),antialias:true,alpha:true})}catch(e){return}
+ const S=new THREE.Scene(),C=new THREE.PerspectiveCamera(42,1,.1,100);S.fog=new THREE.Fog(0x070a18,14,32);
+ S.add(new THREE.AmbientLight(0x8899ff,.7));const d=new THREE.DirectionalLight(0xffd2b0,1.1);d.position.set(-4,8,6);S.add(d);
+ const pr=new THREE.PointLight(0x22d3ee,1.6,16);pr.position.set(3,3,3);S.add(pr);
+ const mat=(c,e,m)=>new THREE.MeshStandardMaterial({color:c,roughness:.45,metalness:m||.1,emissive:e||0,emissiveIntensity:.35});
+ const mesh=(g,m,x,y,z)=>{const o=new THREE.Mesh(g,m);o.position.set(x||0,y||0,z||0);return o};
+ const cyl=(r,h,s)=>new THREE.CylinderGeometry(r,r,h,s||14);
+ function limb(len,r,m,hand,pz,py){const g=new THREE.Group();g.position.set(0,py,pz);g.add(mesh(cyl(r,len),m,0,-len/2,0),mesh(new THREE.SphereGeometry(r*1.35,14,14),hand,0,-len-.05,0));return g}
+ function fighter(kind){
+  const h=kind=='h',g=new THREE.Group(),sk=h?mat(0xffc9a0):mat(0x9fb4e8,0x0a1a40,.7),body=h?mat(0xff7a59,0x401000):mat(0x2c3f8f,0x0a1040,.6),leg=h?mat(0x3b4a9c):mat(0x1b2a5a,0,.6);
+  const torso=new THREE.Group();torso.position.y=1.45;g.add(torso);
+  torso.add(mesh(h?cyl(.5,1.3,18):new THREE.BoxGeometry(1.1,1.3,.9),body,0,.6,0));
+  const head=new THREE.Group();head.position.y=2.2;torso.add(head);head.position.y=1.75;
+  const vis=mat(0x22d3ee,0x22d3ee);
+  if(h){head.add(mesh(new THREE.SphereGeometry(.4,24,24),sk),mesh(new THREE.SphereGeometry(.43,24,12,0,6.3,0,1.45),mat(0x2a1a14),0,.03,0),
+   mesh(new THREE.SphereGeometry(.06,8,8),mat(0x111111),.36,.05,.16),mesh(new THREE.SphereGeometry(.06,8,8),mat(0x111111),.36,.05,-.16))}
+  else{head.add(mesh(new THREE.BoxGeometry(.8,.7,.8),sk),mesh(new THREE.BoxGeometry(.2,.28,.62),vis,.38,.05,0),mesh(cyl(.03,.5,6),sk,0,.6,0),mesh(new THREE.SphereGeometry(.09,10,10),mat(0xff7a59,0xff7a59),0,.9,0))}
+  const aN=limb(1.1,h?.13:.15,body,sk,.62,1.0),aF=limb(1.1,h?.13:.15,body,sk,-.62,1.0);torso.add(aN,aF);
+  const lN=limb(1.4,.16,leg,leg,.22,0),lF=limb(1.4,.16,leg,leg,-.22,0);lN.position.y=1.45;lF.position.y=1.45;g.add(lN,lF);
+  const sh=mesh(new THREE.CircleGeometry(.9,24),new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:.35}),0,.02,0);sh.rotation.x=-Math.PI/2;g.add(sh);
+  return{g,torso,head,aN,aF,lN,lF,vis}}
+ const H=fighter('h'),B=fighter('r');B.g.rotation.y=Math.PI;S.add(H.g,B.g);
+ const floor=new THREE.GridHelper(40,40,0x6d5bd6,0x23306b);floor.position.y=0;S.add(floor);
+ const ring=new THREE.Mesh(new THREE.RingGeometry(5.2,5.35,64),new THREE.MeshBasicMaterial({color:0x22d3ee,side:2,transparent:true,opacity:.6}));ring.rotation.x=-Math.PI/2;ring.position.y=.03;S.add(ring);
+ const pg=new THREE.BufferGeometry(),pa=new Float32Array(600);for(let i=0;i<600;i++)pa[i]=(Math.random()-.5)*(i%3==1?12:30)+(i%3==1?5:0);
+ pg.setAttribute('position',new THREE.BufferAttribute(pa,3));const pts=new THREE.Points(pg,new THREE.PointsMaterial({color:0xa78bfa,size:.08,transparent:true,opacity:.8}));S.add(pts);
+ function word(t,c){const k=document.createElement('canvas');k.width=k.height=256;const x=k.getContext('2d');x.font='900 90px Sora,Arial';x.textAlign='center';x.lineWidth=14;x.strokeStyle='#1a0b14';x.strokeText(t,128,150);x.fillStyle=c;x.fillText(t,128,150);
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(k),transparent:true,depthTest:false}));s.scale.set(0,0,1);S.add(s);return s}
+ const pow=word('POW!','#ffd23f'),bonk=word('BONK!','#ff7ab6'),stars=[...Array(4)].map(()=>{const m=mesh(new THREE.OctahedronGeometry(.14),mat(0xffe066,0xffe066));S.add(m);return m});
+ const bump=(p,a,b)=>p>a&&p<b?Math.sin((p-a)/(b-a)*Math.PI):0;
+ let score={h:0,r:0},was={};const edge=(k,v,w)=>{if(v>.95&&!was[k]){was[k]=1;score[w]++;$('#sh').textContent=score.h;$('#sr').textContent=score.r}if(v<.3)was[k]=0};
+ function pose(p){
+  const j=bump(p,.10,.22),hit1=bump(p,.16,.30),rs=bump(p,.38,.50),dg=bump(p,.40,.54),up=bump(p,.64,.78),hit3=bump(p,.70,.90),w=Math.sin(p*Math.PI*8),w2=Math.sin(p*Math.PI*6);
+  edge('j',j,'h');edge('rs',rs,'r');edge('up',up,'h');
+  H.g.position.set(-2.4+j*.9-dg*.8+up*.7,Math.abs(w)*.06+dg*.3,0);
+  H.aN.rotation.z=.5+w*.05+j*1.1+up*1.35;H.aF.rotation.z=.7-j*.2+w2*.05;H.torso.rotation.z=-j*.2+dg*.3-up*.15;
+  H.lN.rotation.z=w*.25;H.lF.rotation.z=-w*.25;
+  B.g.position.set(2.4+hit1*.9-rs*.6+hit3*1.1,Math.abs(w2)*.05+hit3*1.3,0);B.g.rotation.z=hit3*.5;
+  B.aN.rotation.z=.5+w2*.05+rs*1.1;B.aF.rotation.z=.7+hit1*.6;B.head.rotation.z=hit1*.4+hit3*Math.sin(p*70)*.35;B.torso.rotation.z=hit1*.25;
+  B.lN.rotation.z=-w2*.25;B.lF.rotation.z=w2*.25;B.vis.emissiveIntensity=.35+hit1*2.2+hit3*1.5;
+  pow.position.set(1.2+hit1*.9,3.6,.8);pow.scale.set(hit1*2.4,hit1*2.4,1);bonk.position.set(B.g.position.x,5.1+hit3,.8);bonk.scale.set(hit3*2.6,hit3*2.6,1);
+  stars.forEach((s,i)=>{const a=p*Math.PI*14+i*1.57;s.position.set(B.g.position.x+Math.cos(a)*.7,4.6+hit3*1.3,Math.sin(a)*.7);s.scale.setScalar(hit3);s.rotation.y=a});
+  ring.material.opacity=.5+.2*Math.sin(p*Math.PI*2)}
+ const view={home:[0,2.2,11.5,0,1.9],login:[1.1,2.2,8.2,2.9,1.9],register:[-1.1,2.2,8.2,-2.9,1.9]};
+ let cx=0,cy=2.2,cz=11.5,lx=0,mx=0,my=0,t=0,last=performance.now();
+ addEventListener('pointermove',e=>{mx=e.clientX/innerWidth-.5;my=e.clientY/innerHeight-.5});
+ function size(){const w=innerWidth,h=innerHeight;R.setPixelRatio(Math.min(devicePixelRatio,2));R.setSize(w,h,false);C.aspect=w/h;C.updateProjectionMatrix()}
+ addEventListener('resize',size);size();
+ function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;
+  if(!paused)t+=dt;const p=reduce&&paused?.15:(t%6)/6;pose(p);
+  const v=view[window.view||'home'],narrow=C.aspect<1?(1/C.aspect)*3.2:0,k=Math.min(1,dt*3);
+  cx+=(v[0]+mx*1.6-cx)*k;cy+=(v[1]-my*.8-cy)*k;cz+=(v[2]+narrow-cz)*k;lx+=(v[3]-lx)*k;
+  C.position.set(cx,cy,cz);C.lookAt(lx,v[4],0);pts.rotation.y=t*.02;R.render(S,C);
+  requestAnimationFrame(frame)}
+ requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
